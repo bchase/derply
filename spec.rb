@@ -15,61 +15,73 @@ describe 'Link Shortener' do
     describe '#next' do
       subject { lns.next! }
 
-      # context 'for 0..8' do
-      #   let(:lns){ LinkNameString.new('0') } 
+      context 'for 0..8' do
+        let(:lns){ LinkNameString.new('0') } 
 
-      #   it 'should increment the digit' do
-      #     ('0'..'8').each do |i|
-      #       i.should eq(lns)
-      #       lns.next!
-      #     end
-      #   end
-      # end
+        it 'should increment the digit' do
+          ('0'..'8').each do |i|
+            i.should eq(lns)
+            lns.next!
+          end
+        end
+      end
 
-      # context 'for a..y' do
-      #   let(:lns){ LinkNameString.new('a') } 
+      context 'for a..y' do
+        let(:lns){ LinkNameString.new('a') } 
 
-      #   it 'should increment the lowercase character' do
-      #     ('a'..'y').each do |l|
-      #       l.should eq(lns)
-      #       lns.next!
-      #     end
-      #   end
-      # end
+        it 'should increment the lowercase character' do
+          ('a'..'y').each do |l|
+            l.should eq(lns)
+            lns.next!
+          end
+        end
+      end
 
-      # context 'for A..Y' do
-      #   let(:lns){ LinkNameString.new('A') } 
+      context 'for A..Y' do
+        let(:lns){ LinkNameString.new('A') } 
 
-      #   it 'should increment the uppercase character' do
-      #     ('A'..'Y').each do |u|
-      #       u.should eq(lns)
-      #       lns.next!
-      #     end
-      #   end
-      # end
+        it 'should increment the uppercase character' do
+          ('A'..'Y').each do |u|
+            u.should eq(lns)
+            lns.next!
+          end
+        end
+      end
 
-      # context 'when lns is "9"' do
-      #   let(:lns){ LinkNameString.new('9') } 
+      context 'when lns is "9"' do
+        let(:lns){ LinkNameString.new('9') } 
 
-      #   it { should eq ('a') }
-      # end
+        it { should eq ('a') }
+      end
 
-      # context 'when lns is "z"' do
-      #   let(:lns){ LinkNameString.new('z') } 
+      context 'when lns is "z"' do
+        let(:lns){ LinkNameString.new('z') } 
 
-      #   it { should eq ('A') }
-      # end
+        it { should eq ('A') }
+      end
 
-      # context 'when lns is "Z"' do
-      #   let(:lns){ LinkNameString.new('Z') } 
+      context 'when lns is "Z"' do
+        let(:lns){ LinkNameString.new('Z') } 
 
-      #   it { should eq ('00') }
-      # end
+        it { should eq ('00') }
+      end
 
       context 'when lns is "00"' do
         let(:lns){ LinkNameString.new('00') } 
 
         it { should eq ('01') }
+      end
+
+      context 'when lns is "00"' do
+        let(:lns){ LinkNameString.new('ZZ') } 
+
+        it { should eq ('000') }
+      end
+
+      context 'when lns is "ZZ"' do
+        let(:lns){ LinkNameString.new('ZZ') } 
+
+        it { should eq ('000') }
       end
     end
   end

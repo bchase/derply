@@ -29,36 +29,37 @@ class LinkNameString < String
     # @str ||= Link.where(auto: true).last.try(:name) 
     # return (@str = '0') if @str.nil?
 
-    rev_name_arr = self.split('').reverse
+    char_arr     = self.split('')
+    rev_char_arr = char_arr.reverse
 
-    flip, first, new_digit = true, true, false
-    rev_name_arr.map! do |char|
-      return char unless flip
-      flip = false 
+    if char_arr.all? {|ch| ch == 'Z' }
+      return Array.new(char_arr.count + 1, '0').join
+    end
 
-      case char
-      when '0'..'8', 'a'..'y', 'A'..'Y' then char.old_next
-      when '9' then 'a'
-      when 'z' then 'A'
-      when 'Z'
-        flip = true
-        new_digit = true if first
-        '0'
+    flip = true
+    rev_char_arr.map! do |char|
+      if flip
+        flip = false 
+
+        case char
+        when '0'..'8', 'a'..'y', 'A'..'Y' then char.old_next
+        when '9' then 'a'
+        when 'z' then 'A'
+        when 'Z'
+          flip = true
+          FIRST_CHAR
+        end
+      else
+        char
       end
     end
 
-    rev_name_arr.unshift '0' if new_digit
-    first, new_digit = false, false
-
-    puts rev_name_arr.inspect
-
-    str = rev_name_arr.reverse.join
-    
-    puts str
-    
-    str
+    str = rev_char_arr.reverse.join
   end
-end
+
+private
+  FIRST_CHAR, LAST_CHAR = '0', 'Z'
+end 
 
 class Link
   include Mongoid::Document
