@@ -7,4 +7,6 @@ gem 'haml'
 
 gem 'mongo'
 gem 'mongoid'
-gem "bson_ext"
+gem 'bson_ext'
+
+gem 'rspec'
