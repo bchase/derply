@@ -139,51 +139,6 @@ configure :production do
   Mongoid.load!("mongoid.yml", :production)
 end
 
-class LinkNameString < String
-  alias :old_next :next
-
-  def next!
-    self.replace self.next
-  end
-
-  def next
-    # @str ||= Link.where(auto: true).last.try(:name) 
-    # return (@str = '0') if @str.nil?
-
-    char_arr     = self.split('')
-    rev_char_arr = char_arr.reverse
-
-    if char_arr.all? {|ch| ch == 'Z' }
-      return Array.new(char_arr.count + 1, '0').join
-    end
-
-    # LOOK AT USING ARRAY#CYCLE
-
-    flip = true
-    rev_char_arr.map! do |char|
-      if flip
-        flip = false 
-
-        case char
-        when '0'..'8', 'a'..'y', 'A'..'Y' then char.old_next
-        when '9' then 'a'
-        when 'z' then 'A'
-        when 'Z'
-          flip = true
-          FIRST_CHAR
-        end
-      else
-        char
-      end
-    end
-
-    str = rev_char_arr.reverse.join
-  end
-
-private
-  FIRST_CHAR, LAST_CHAR = '0', 'Z'
-end 
-
 class Link
   include Mongoid::Document
 
@@ -193,7 +148,8 @@ class Link
 
   validates_uniqueness_of :name
 
-  @@last_name = LinkNameString.new(Link.where(auto: true).last.try(:name) || '0')
+  Slug = Slugger::SlugClass.for ranges: ['0'..'9', 'a'..'z', 'A'..'Z'], 
+                                last:   Link.where(auto: true).last.try(:name)
 
   def short_url
     "#{$host}/#{name}"
@@ -208,7 +164,7 @@ private
   def ensure_name!
     return true if self.name
 
-    (name = @@last_name.next!) until Link.does_not_exist_with_name?(name)
+    (name = Slug.new) until Link.does_not_exist_with_name?(name)
 
     self.name = name
     self.auto = true
