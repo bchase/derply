@@ -2,6 +2,133 @@ require 'sinatra'
 require 'haml'
 require 'mongoid'
 
+module Slugger
+  # # returns a class here
+  # Slug = Slugger::SlugClass.for ranges: ['0'..'9', 'a'..'z', 'A'..'Z'], last: '0sDw33'
+  # 
+  # # each time we want to generate a new link slug...
+  # slug = Slug.new
+  
+  class SlugDigit < Enumerator
+    # include Enumerable # tried to inherit from this lol
+
+    attr_accessor :value
+
+    def to_s
+      self.value
+    end
+
+    def next
+      @@flipped  = false
+      self.value = super
+    rescue StopIteration
+      self.rewind
+      self.next
+      @@flipped  = true
+      self.value
+    end
+
+    def flipped?
+      @@flipped
+    end
+
+    def initialize(char_arr, char=nil)
+      # TODO test args
+
+      @@char_arr = char_arr
+      @@flipped  = false
+
+      char ||= char_arr.first
+
+      super(char_arr)
+
+      skips  = char_arr.index char
+      skips.times { self.next }
+
+      self.value = char
+    end
+  end
+
+  module SlugClass
+    def self.for(opts)
+      # TODO check for ranges of strings
+      
+      ranges   = opts[:ranges]
+      last_str = opts[:last] || ranges.first.first #TODO
+
+
+      char_arr = ranges.map(&:to_a).flatten
+
+      return Class.new(String) do
+      # private # TODO
+
+        # available from SlugType.for opts
+        @@char_arr      = char_arr
+        @@initial_str   = last_str # tried first to grab `last` inside of a `def` at first
+        # available from SlugType.for opts
+
+        def char_arr
+          @@char_arr
+        end
+
+        def initial_str
+          @@initial_str
+        end
+
+        def rev_digit_arr
+          @@rev_digit_arr ||= initial_str.split('').map do |char|
+            SlugDigit.new(char_arr, char)
+          end.reverse
+        end
+
+        def to_s
+          rev_digit_arr.reverse.map(&:to_s).join
+        end
+        
+        def last
+          self.class.last
+        end
+
+        def self.last
+          @@last ||= self.new(@@initial_str) # first tried `self.class.new`, just blew my own mind
+        end 
+
+        def increment_lsd
+          flipped_last = true
+          rev_digit_arr.map! do |digit|
+            return digit unless flipped_last
+
+            digit.next
+            flipped_last = digit.flipped?
+            digit
+          end
+        end
+
+        def push_new_msd
+          rev_digit_arr.push SlugDigit.new(@@char_arr)
+        end
+
+        def next
+          # flip digits as needed
+          increment_lsd
+
+          # add a least significant digit if they all flipped
+          push_new_msd if rev_digit_arr.all? &:flipped?
+
+          @@last = self
+
+          self.to_s
+        end
+
+        def initialize(str=last.next)
+          # str ||= @@last.next
+          super(str)
+        end
+      end
+    end
+  end
+end
+
 configure :development do 
   $host = 'localhost:4567'
   Mongoid.load!("mongoid.yml", :development)
@@ -11,12 +138,6 @@ configure :production do
   $host = 'example.com'
   Mongoid.load!("mongoid.yml", :production)
 end
-
-# class SequencedLinkName < String
-#   def initialize
-#     super self.class.next_name
-#   end
-# private
 
 class LinkNameString < String
   alias :old_next :next
@@ -35,6 +156,8 @@ class LinkNameString < String
     if char_arr.all? {|ch| ch == 'Z' }
       return Array.new(char_arr.count + 1, '0').join
     end
+
+    # LOOK AT USING ARRAY#CYCLE
 
     flip = true
     rev_char_arr.map! do |char|

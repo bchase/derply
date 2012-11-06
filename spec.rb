@@ -72,7 +72,7 @@ describe 'Link Shortener' do
         it { should eq ('01') }
       end
 
-      context 'when lns is "00"' do
+      context 'when lns is "ZZ"' do
         let(:lns){ LinkNameString.new('ZZ') } 
 
         it { should eq ('000') }
