@@ -65,7 +65,7 @@ private
   def ensure_name!
     return true if self.name?
 
-    (name = Link.last_name.next!) until Link.does_not_exist_with_name?(name)
+    name = Link.last_name.next! until Link.does_not_exist_with_name?(name)
 
     self.name = name
     self.auto = true
