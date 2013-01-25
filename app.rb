@@ -5,12 +5,12 @@ require 'haml'
 require 'mongoid'
 
 configure :development do 
-  $host = 'localhost:4567'
+  $host = 'http://localhost:4567'
   Mongoid.load!("mongoid.yml", :development)
 end
 
 configure :production do 
-  $host = 'derply.herokuapp.com'
+  $host = 'http://derply.herokuapp.com'
   Mongoid.load!("mongoid.yml", :production)
 end
 
