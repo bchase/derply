@@ -10,7 +10,7 @@ configure :development do
 end
 
 configure :production do 
-  $host = 'example.com'
+  $host = 'derply.herokuapp.com'
   Mongoid.load!("mongoid.yml", :production)
 end
 
